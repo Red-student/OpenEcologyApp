@@ -1,0 +1,341 @@
+@import url('variables.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+a {
+    color: var(--data-blue);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-green);
+}
+
+/* Общие стили для карточек */
+.card {
+    background-color: var(--white);
+    border: none;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
+}
+
+/* Стили для кнопок */
+.btn-primary {
+    background-color: #198754 !important;
+    border-color: #198754!important;
+    color: var(--white);
+    transition: var(--transition-base);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-wheat);
+    border-color: var(--primary-wheat);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-brown);
+    border-color: var(--secondary-brown);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-wheat);
+    border-color: var(--primary-wheat);
+}
+
+/* Стили для форм */
+.form-control {
+    border: 1px solid var(--table-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    transition: var(--transition-base);
+}
+
+.form-control:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(107, 175, 146, 0.25);
+}
+
+.form-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Стили для таблиц */
+.table {
+    background-color: var(--white);
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead {
+    background-color: var(--primary-green);
+    color: var(--white);
+}
+
+.table thead th {
+    border-bottom: none;
+    font-weight: 500;
+    padding: 1rem;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--table-stripe);
+}
+
+.table tbody tr:hover {
+    background-color: var(--table-hover);
+}
+
+.table td {
+    border-color: var(--table-border);
+    color: var(--text-primary);
+    padding: 1rem;
+}
+
+/* Стили для алертов */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #E3F5E9;
+    color: #2B7A4B;
+}
+
+.alert-danger {
+    background-color: #FFE8E8;
+    color: #D63939;
+}
+
+.alert-warning {
+    background-color: #FFF8E7;
+    color: #95591E;
+}
+
+.alert-info {
+    background-color: var(--data-light-blue);
+    color: var(--data-blue);
+}
+
+/* Стили для бейджей */
+.badge {
+    padding: 0.5em 0.8em;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.badge-primary {
+    background-color: var(--primary-green);
+    color: var(--white);
+}
+
+.badge-secondary {
+    background-color: var(--secondary-brown);
+    color: var(--white);
+}
+
+.badge-success {
+    background-color: #4CAF50;
+    color: var(--white);
+}
+
+.badge-warning {
+    background-color: var(--primary-wheat);
+    color: var(--text-primary);
+}
+
+/* Стили для прогресс-бара */
+.progress {
+    background-color: var(--table-stripe);
+    border-radius: 8px;
+    height: 0.8rem;
+}
+
+.progress-bar {
+    background-color: var(--primary-green);
+    transition: var(--transition-base);
+}
+
+/* Стили для модальных окон */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.modal-header {
+    background-color: var(--primary-green);
+    color: var(--white);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--table-border);
+}
+
+/* Стили для списков */
+.list-group-item {
+    border-color: var(--table-border);
+    transition: var(--transition-fast);
+}
+
+.list-group-item:hover {
+    background-color: var(--table-stripe);
+}
+
+.list-group-item.active {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+/* Стили для навигации по вкладкам */
+.nav-tabs {
+    border-bottom: 1px solid var(--table-border);
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 2px solid transparent;
+    transition: var(--transition-fast);
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: var(--primary-wheat);
+    color: var(--text-primary);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+    font-weight: 500;
+}
+
+/* Стили для пагинации */
+.pagination .page-link {
+    color: var(--text-primary);
+    border-color: var(--table-border);
+    transition: var(--transition-fast);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--table-stripe);
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color:black !important;
+}
+
+/* Стили для тултипов и поповеров */
+.tooltip-inner {
+    background-color: var(--data-blue);
+    border-radius: 6px;
+}
+
+.popover {
+    border-color: var(--table-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.popover-header {
+    background-color: var(--primary-green);
+    color: var(--white);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Стили для спиннера загрузки */
+.spinner-border {
+    color: var(--primary-green);
+}
+
+/* Стили для иконок */
+.icon-primary {
+    color: var(--primary-green);
+}
+
+.icon-secondary {
+    color: var(--secondary-brown);
+}
+
+.icon-accent {
+    color: var(--accent-orange);
+}
+
+/* Утилиты для текста */
+.text-primary {
+    color: var(--primary-green) !important;
+}
+
+.text-secondary {
+    color: var(--secondary-brown) !important;
+}
+
+.text-accent {
+    color: var(--accent-orange) !important;
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+/* Утилиты для фона */
+.bg-primary {
+    background-color: var(--primary-green) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary-brown) !important;
+}
+
+.bg-accent {
+    background-color: var(--accent-orange) !important;
+}
+
+.bg-light {
+    background-color: var(--bg-light) !important;
+}
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-wheat);
+}

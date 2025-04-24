@@ -1,0 +1,32 @@
+:root {
+    /* Основные цвета */
+    --primary-green: #6BAF92;
+    --primary-wheat: #DDB67D;
+    /* Второстепенные цвета */
+    --secondary-brown: #7C5A41;
+    --secondary-beige: #F4E8D1;
+    /* Аналитические цвета */
+    --data-blue: #325D79;
+    --data-light-blue: #CDE8F6;
+    --accent-orange: #FFA94D;
+    /* Нейтральные цвета */
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-gray: #4B4B4B;
+    --bg-light: #F9F9F9;
+    --white: #FFFFFF;
+    /* Таблицы */
+    --table-border: #DADADA;
+    --table-stripe: #F4F8F4;
+    --table-hover: #E0F5DF;
+    /* Навигация */
+    --nav-bg: #325D79;
+    --nav-hover: #325D79;
+    --nav-active: #FFA94D;
+    /* Тени */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+    /* Переходы */
+    --transition-fast: all 0.2s ease;
+    --transition-base: all 0.3s ease;
+}

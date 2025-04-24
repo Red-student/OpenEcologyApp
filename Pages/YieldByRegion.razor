@@ -1,0 +1,62 @@
+@page "/yield-by-region"
+@using OpenEcologyApp.Data
+@using OpenEcologyApp.Services
+@inject GrainHarvestService HarvestService
+
+<PageTitle>Урожайность по областям</PageTitle>
+
+<div class="container">
+    <h1 class="text-center mb-4">Урожайность зерновых по областям Казахстана</h1>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="regionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Таблица данных по областям</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Область</th>
+                                    <th>Урожайность (ц/га)</th>
+                                    <th>Посевная площадь (тыс. га)</th>
+                                    <th>Валовый сбор (тыс. тонн)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in regionData)
+                                {
+                                    <tr>
+                                        <td>@item.Region</td>
+                                        <td>@item.Yield.ToString("F1")</td>
+                                        <td>@item.SownArea.ToString("F0")</td>
+                                        <td>@item.GrossHarvest.ToString("F0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GrainHarvest> regionData = new List<GrainHarvest>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        regionData = await HarvestService.GetAllDataAsync();
+    }
+} 

@@ -1,0 +1,57 @@
+@page "/gross-harvest"
+@using OpenEcologyApp.Data
+@inject HttpClient Http
+
+<PageTitle>Валовый сбор</PageTitle>
+
+<div class="container">
+    <h1 class="text-center mb-4">Валовый сбор зерновых</h1>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Таблица данных</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Год</th>
+                                    <th>Область</th>
+                                    <th>Валовый сбор (тыс. тонн)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (data != null)
+                                {
+                                    @foreach (var item in data)
+                                    {
+                                        <tr>
+                                            <td>@item.Year</td>
+                                            <td>@item.Region</td>
+                                            <td>@item.GrossHarvest.ToString("F0")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GrainHarvest>? data;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    
+    private async Task LoadData()
+    {
+        data = await Http.GetFromJsonAsync<List<GrainHarvest>>("api/ecology/1/10") ?? new();
+    }
+} 

@@ -1,0 +1,460 @@
+@page "/analytics"
+@using OpenEcologyApp.Data
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Аналитика</PageTitle>
+
+<div class="container" style="background-color: #F9F9F9;">
+    <h1 class="text-center mb-4" style="color: #6BAF92;">Аналитика зерновых культур</h1>
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status" style="color: #6BAF92;">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        </div>
+    }
+    else if (error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @error
+        </div>
+    }
+    else
+    {
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <h3>Средняя урожайность</h3>
+                        <p class="stat-value">@averageYield.ToString("F1") ц/га</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <h3>Общая площадь</h3>
+                        <p class="stat-value">@totalArea.ToString("N0") тыс. га</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <h3>Валовый сбор</h3>
+                        <p class="stat-value">@totalHarvest.ToString("N0") тыс. т</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-card-content">
+                        <h3>Количество регионов</h3>
+                        <p class="stat-value">@regionsCount</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #6BAF92;">Динамика урожайности по годам</h5>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="yieldChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #6BAF92;">Распределение посевных площадей</h5>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="areaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #6BAF92;">Топ-5 регионов по урожайности</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Регион</th>
+                                        <th>Средняя урожайность (ц/га)</th>
+                                        <th>Общая площадь (тыс. га)</th>
+                                        <th>Валовый сбор (тыс. тонн)</th>
+                                        <th>Динамика</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var region in topRegions)
+                                    {
+                                        <tr>
+                                            <td>@region.Region</td>
+                                            <td>@region.AverageYield.ToString("F1")</td>
+                                            <td>@region.TotalArea.ToString("F0")</td>
+                                            <td>@region.TotalHarvest.ToString("F0")</td>
+                                            <td>
+                                                <span class="@(region.YieldTrend > 0 ? "trend-up" : "trend-down")">
+                                                    @(region.YieldTrend > 0 ? "↑" : "↓") @Math.Abs(region.YieldTrend).ToString("F1")%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    :root {
+        --primary-green: #6BAF92;
+        --primary-wheat: #DDB67D;
+        --secondary-brown: #7C5A41;
+        --secondary-beige: #F4E8D1;
+        --data-blue: #325D79;
+        --data-light-blue: #CDE8F6;
+        --accent-orange: #FFA94D;
+        --text-gray: #4B4B4B;
+        --bg-light: #F9F9F9;
+        --white: #FFFFFF;
+        --table-border: #DADADA;
+        --table-stripe: #F4F8F4;
+        --table-hover: #E0F5DF;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        color: var(--text-gray);
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        background-color: var(--white);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+    
+    .table {
+        background-color: var(--white);
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead {
+        background-color: var(--primary-green);
+        color: var(--white);
+    }
+
+    .table thead th {
+        border-bottom: none;
+        padding: 1rem;
+        font-weight: 500;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background-color: var(--table-stripe);
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--table-hover);
+        transition: background-color 0.2s ease;
+        transition: all 0.2s ease;
+    }
+
+    .table td {
+        border-color: var(--table-border);
+        color: var(--text-gray);
+        padding: 1rem;
+    }
+
+    .trend-up {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+
+    .trend-down {
+        color: #FF6B6B;
+        font-weight: 600;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-top: 4px solid var(--primary-green);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        border-top-color: var(--primary-wheat);
+    }
+
+    .stat-card-content {
+        text-align: center;
+    }
+
+    .stat-card h3 {
+        color: var(--data-blue);
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+        color: var(--primary-green);
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid var(--table-border);
+        padding: 8px 12px;
+        transition: all 0.3s ease;
+        background-color: var(--white);
+        color: var(--text-gray);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.2rem rgba(107, 175, 146, 0.25);
+    }
+
+    .form-control:hover {
+        border-color: var(--primary-wheat);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-green);
+        border-color: var(--primary-green);
+        border-radius: 8px;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-wheat);
+        border-color: var(--primary-wheat);
+        transform: translateY(-2px);
+    }
+
+    canvas {
+        transition: all 0.3s ease;
+        background-color: var(--white);
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    canvas:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    label {
+        color: var(--data-blue);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-danger {
+        background-color: #FFE8E8;
+        border-color: #FF6B6B;
+        color: #D63939;
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private string? error;
+    private List<GrainHarvest>? data;
+    private List<RegionStats> topRegions = new();
+    private string selectedYear = "";
+    private string selectedRegion = "";
+    private List<string> availableYears = new();
+    private List<string> availableRegions = new();
+    private double averageYield;
+    private double totalArea;
+    private double totalHarvest;
+    private int regionsCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (data != null && data.Any())
+        {
+            await InitializeCharts();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            error = null;
+
+            var client = HttpClientFactory.CreateClient("Default");
+            data = await client.GetFromJsonAsync<List<GrainHarvest>>("api/ecology/all") ?? new();
+
+            if (data.Any())
+            {
+                availableYears = data.Select(d => d.Year.ToString()).Distinct().OrderByDescending(y => y).ToList();
+                availableRegions = data.Select(d => d.Region).Distinct().OrderBy(r => r).ToList();
+                CalculateStats();
+                CalculateTopRegions();
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Ошибка при загрузке данных: {ex.Message}";
+            Console.WriteLine(error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CalculateStats()
+    {
+        if (data == null) return;
+
+        var filteredData = ApplyFiltersToData();
+        
+        averageYield = filteredData.Average(d => d.Yield);
+        totalArea = filteredData.Sum(d => d.SownArea);
+        totalHarvest = filteredData.Sum(d => d.GrossHarvest);
+        regionsCount = filteredData.Select(d => d.Region).Distinct().Count();
+    }
+
+    private List<GrainHarvest> ApplyFiltersToData()
+    {
+        if (data == null) return new List<GrainHarvest>();
+
+        var filteredData = data.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(selectedYear))
+        {
+            filteredData = filteredData.Where(d => d.Year.ToString() == selectedYear);
+        }
+
+        if (!string.IsNullOrEmpty(selectedRegion))
+        {
+            filteredData = filteredData.Where(d => d.Region == selectedRegion);
+        }
+
+        return filteredData.ToList();
+    }
+
+    private void CalculateTopRegions()
+    {
+        if (data == null) return;
+
+        var filteredData = ApplyFiltersToData();
+
+        topRegions = filteredData
+            .GroupBy(d => d.Region)
+            .Select(g => new RegionStats
+            {
+                Region = g.Key,
+                AverageYield = g.Average(d => d.Yield),
+                TotalArea = g.Sum(d => d.SownArea),
+                TotalHarvest = g.Sum(d => d.GrossHarvest),
+                YieldTrend = CalculateYieldTrend(g.Key)
+            })
+            .OrderByDescending(r => r.AverageYield)
+            .Take(5)
+            .ToList();
+    }
+
+    private double CalculateYieldTrend(string region)
+    {
+        if (data == null) return 0;
+
+        var regionData = data.Where(d => d.Region == region)
+            .OrderBy(d => d.Year)
+            .ToList();
+
+        if (regionData.Count < 2) return 0;
+
+        var firstYear = regionData.First().Yield;
+        var lastYear = regionData.Last().Yield;
+
+        return ((lastYear - firstYear) / firstYear) * 100;
+    }
+
+    private async Task ApplyFilters()
+    {
+        CalculateStats();
+        CalculateTopRegions();
+        await InitializeCharts();
+    }
+
+    private async Task InitializeCharts()
+    {
+        if (data == null) return;
+
+        // Группируем данные по годам
+        var yearlyData = data
+            .GroupBy(d => d.Year)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        // Подготавливаем данные для графиков
+        var years = yearlyData.Select(g => g.Key.ToString()).ToArray();
+        var yields = yearlyData.Select(g => g.Average(d => d.Yield)).ToArray();
+        var areas = yearlyData.Select(g => g.Sum(d => d.SownArea)).ToArray();
+
+        // Инициализируем графики
+        await JSRuntime.InvokeVoidAsync("initializeCharts", years, yields, areas);
+    }
+
+    private class RegionStats
+    {
+        public string Region { get; set; } = "";
+        public double AverageYield { get; set; }
+        public double TotalArea { get; set; }
+        public double TotalHarvest { get; set; }
+        public double YieldTrend { get; set; }
+    }
+} 

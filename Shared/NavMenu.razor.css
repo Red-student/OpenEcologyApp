@@ -1,0 +1,112 @@
+.navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-row {
+    height: 3.5rem;
+    background-color: var(--primary-green); /* глубокий синий для шапки */
+}
+
+.container-fluid {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.navbar-brand {
+    font-size: 1.1rem;
+    color: var(--white);
+    font-weight: 600;
+    margin-left: 0;
+    transition: var(--transition-fast);
+}
+
+.navbar-brand:hover {
+    color: var(--accent-orange);
+}
+
+    .navbar-brand i {
+        color: var(--white);
+        margin-right: 0.5rem;
+    }
+
+.nav-item {
+    font-size: 0.9rem;
+    padding: 0.3rem 1rem;
+}
+
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
+
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
+
+.nav-item ::deep a {
+    color: var(--white);
+    border-radius: 8px;
+    height: 2.8rem;
+    display: flex;
+    align-items: center;
+    line-height: 1.25;
+    padding: 0.8rem 1rem;
+    transition: var(--transition-base);
+}
+
+.nav-item ::deep a i {
+    color: var(--white);
+    transition: var(--transition-fast);
+}
+
+    .nav-item ::deep a.active {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--data-blue) 100%);
+        color: var(--accent-orange);
+    }
+
+.nav-item ::deep a.active i {
+    color: var(--accent-orange);
+}
+
+    .nav-item ::deep a:hover {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--data-blue) 100%);
+        color: var(--white);
+        transform: translateX(5px);
+    }
+
+.nav-item ::deep a:hover i {
+    color: var(--accent-orange);
+}
+
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .collapse {
+        display: block;
+    }
+
+    .nav-scrollable {
+        height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+        background-color: var(--primary-green);
+    }
+
+    /* Стили для скроллбара в меню */
+    .nav-scrollable::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .nav-scrollable::-webkit-scrollbar-track {
+        background: var(--nav-bg);
+    }
+
+        .nav-scrollable::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--data-blue) 100%);
+            border-radius: 2px;
+        }
+
+    .nav-scrollable::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-orange);
+    }
+}

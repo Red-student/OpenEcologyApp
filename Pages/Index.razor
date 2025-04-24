@@ -1,0 +1,407 @@
+﻿@page "/"
+@using OpenEcologyApp.Data
+
+<PageTitle>Главная - Мониторинг урожая</PageTitle>
+
+<div class="hero-section">
+    <div class="container">
+        <h1>Мониторинг урожайности зерновых культур</h1>
+        <p class="lead">Комплексная система анализа и отслеживания показателей урожайности</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row g-4">
+        <!-- Блок статистики -->
+        <div class="col-md-8">
+            <div class="stats-card">
+                <h2>Ключевые показатели</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <i class="fas fa-chart-line"></i>
+                            <div class="metric-content">
+                                <h3>Средняя урожайность</h3>
+                                <p class="metric-value">32.5 ц/га</p>
+                                <span class="trend-up">+2.3% с прошлого года</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <div class="metric-content">
+                                <h3>Общая площадь</h3>
+                                <p class="metric-value">1.2 млн га</p>
+                                <span class="trend-up">+5.1% к плану</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card">
+                            <i class="fas fa-warehouse"></i>
+                            <div class="metric-content">
+                                <h3>Валовый сбор</h3>
+                                <p class="metric-value">3.8 млн тонн</p>
+                                <span class="trend-up">+12% с прошлого года</span>
+                            </div>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+
+        <!-- Блок быстрых действий -->
+        <div class="col-md-4">
+            <div class="quick-actions-card">
+                <h2>Быстрые действия</h2>
+                <div class="action-buttons">
+                    <a href="/grain-data" class="action-button">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Зерновые данные</span>
+                    </a>
+                    <a href="/analytics" class="action-button">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Аналитика</span>
+                    </a>
+                    <a href="/reports" class="action-button">
+                        <i class="fas fa-map"></i>
+                        <span>Отчеты</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Блок последних обновлений -->
+        <div class="col-md-8">
+            <div class="updates-card">
+                <h2>Последние обновления</h2>
+                <div class="updates-list">
+                    <div class="update-item">
+                        <div class="update-icon">
+                            <i class="fas fa-sync"></i>
+                        </div>
+                        <div class="update-content">
+                            <h4>Обновление данных по урожайности</h4>
+                            <p>Добавлены новые данные по урожайности за последний квартал</p>
+                            <span class="update-time">2 часа назад</span>
+                        </div>
+                    </div>
+                    <div class="update-item">
+                        <div class="update-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="update-content">
+                            <h4>Новый аналитический отчет</h4>
+                            <p>Доступен сравнительный анализ показателей за 2022-2023 годы</p>
+                            <span class="update-time">1 день назад</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Блок уведомлений -->
+        <div class="col-md-4">
+            <div class="notifications-card">
+                <h2>Уведомления</h2>
+                <div class="notifications-list">
+                    <div class="notification-item priority-high">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="notification-content">
+                            <h4>Отклонение от плана</h4>
+                            <p>Выявлено отклонение от плана в Южном регионе</p>
+                        </div>
+                    </div>
+                    <div class="notification-item priority-medium">
+                        <i class="fas fa-clock"></i>
+                        <div class="notification-content">
+                            <h4>Обновление системы</h4>
+                            <p>Плановое обновление системы сегодня в 23:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-4" style="color: var(--primary-color);">Почему это важно?</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-seedling fa-2x me-3" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div>
+                        <h4>Развитие сельского хозяйства</h4>
+                        <p>Мониторинг урожайности помогает выявлять эффективные методы ведения сельского хозяйства и способствует развитию отрасли</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-pie fa-2x me-3" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div>
+                        <h4>Планирование производства</h4>
+                        <p>Анализ данных позволяет эффективно планировать производство и распределение ресурсов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h2 style="color: var(--primary-color);">Начните работу прямо сейчас</h2>
+            <p class="lead">Получите доступ к актуальным данным об урожайности зерновых культур в Казахстане</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary-color);"></i>Детальная статистика по регионам</li>
+                <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary-color);"></i>Исторические данные с 2004 года</li>
+                <li class="mb-2"><i class="fas fa-check me-2" style="color: var(--primary-color);"></i>Удобный интерфейс для анализа</li>
+            </ul>
+            <a href="/grain-data" class="btn btn-primary btn-lg mt-3">Перейти к данным</a>
+        </div>
+        <div class="col-md-6 text-center">
+            <img src="/images/img1.jpg" alt="Мониторинг урожайности" 
+                 class="feature-image"
+                 onerror="this.onerror=null; this.src='/images/fallback.jpg';">
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--data-blue) 100%);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .hero-section h1 {
+        color: var(--white);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .hero-section .lead {
+        color: var(--secondary-beige);
+        font-size: 1.2rem;
+        opacity: 0.9;
+        text-align: center;
+    }
+
+    /* Общие стили для карточек */
+    .stats-card,
+    .quick-actions-card,
+    .updates-card,
+    .notifications-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .stats-card:hover,
+    .quick-actions-card:hover,
+    .updates-card:hover,
+    .notifications-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Стили для метрик */
+    .metric-card {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-beige) 100%);
+        color: var(--white);
+        border-radius: 10px;
+        padding: 1.2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-base);
+    }
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .metric-card .metric-content h3,
+    .metric-card .metric-value {
+        color: var(--white);
+    }
+
+    .metric-content {
+        flex: 1;
+    }
+
+    .metric-content h3 {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+        color: var(--data-blue);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    /* Стили для быстрых действий */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .action-button {
+        background-color: var(--bg-light);
+        color: var(--text-primary);
+        padding: 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: var(--transition-base);
+    }
+
+    .action-button:hover {
+        background-color: var(--primary-green);
+        color: var(--white);
+        transform: translateX(5px);
+    }
+
+    .action-button i {
+        font-size: 1.2rem;
+        color: var(--primary-green);
+    }
+
+    .action-button:hover i {
+        color: var(--white);
+    }
+
+    /* Стили для обновлений */
+    .updates-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .update-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: var(--bg-light);
+        border-radius: 8px;
+        transition: var(--transition-base);
+    }
+
+    .update-item:hover {
+        background-color: var(--secondary-beige);
+        transform: translateX(5px);
+    }
+
+    .update-icon {
+        background-color: var(--white);
+        color: var(--primary-green);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .update-content h4 {
+        color: var(--text-primary);
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .update-content p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .update-time {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* Стили для уведомлений */
+    .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .notification-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        transition: var(--transition-base);
+    }
+
+    .notification-item.priority-high {
+        background-color: #FFE8E8;
+    }
+
+    .notification-item.priority-medium {
+        background-color: #FFF8E7;
+    }
+
+    .notification-item i {
+        color: var(--primary-green);
+    }
+
+    .notification-content h4 {
+        color: var(--text-primary);
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .notification-content p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+
+    /* Утилиты */
+    .trend-up, .trend-down, .trend-neutral {
+        color: var(--white);
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    /* Дополнительные тени */
+    :root {
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-image {
+        width: 400px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+    }
+</style>

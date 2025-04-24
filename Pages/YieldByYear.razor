@@ -1,0 +1,230 @@
+@page "/yield-by-year"
+@using OpenEcologyApp.Data
+@using OpenEcologyApp.Services
+@using Microsoft.JSInterop
+@inject GrainHarvestService HarvestService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Урожайность по годам</PageTitle>
+
+<div class="container">
+    <h1 class="text-center mb-4">Отчеты данных зерновых культур</h1>
+    
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Фильтры</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Год от</label>
+                        <input type="number" class="form-control" @bind="startYear" min="2004" max="2024" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Год до</label>
+                        <input type="number" class="form-control" @bind="endYear" min="2004" max="2024" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Область</label>
+                        <select class="form-select" @bind="selectedRegion">
+                            <option value="">Все области</option>
+                            @foreach (var region in regions)
+                            {
+                                <option value="@region">@region</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @onclick="ApplyFilters">Применить фильтры</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Экспорт данных</h5>
+                    <p class="card-text">Экспортируйте данные в формате JSON</p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" @onclick="ExportData">Экспорт в JSON</button>
+                        <div class="d-flex gap-2 align-items-center">
+                            <InputFile OnChange="OnFileSelected" class="form-control" accept=".json" />
+                            <button class="btn btn-primary" @onclick="ImportData" disabled="@(selectedFile == null || isImporting)">
+                                @if (isImporting)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Импорт...</span>
+                                }
+                                else
+                                {
+                                    <span>Импортировать</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success mt-2" role="alert">
+                            @successMessage
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Таблица данных</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Год</th>
+                                    <th>Область</th>
+                                    <th>Урожайность (ц/га)</th>
+                                    <th>Посевная площадь (тыс. га)</th>
+                                    <th>Валовый сбор (тыс. тонн)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in filteredData)
+                                {
+                                    <tr>
+                                        <td>@item.Year</td>
+                                        <td>@item.Region</td>
+                                        <td>@item.Yield.ToString("F1")</td>
+                                        <td>@item.SownArea.ToString("F0")</td>
+                                        <td>@item.GrossHarvest.ToString("F0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<GrainHarvest> harvestData = new List<GrainHarvest>();
+    private List<string> regions = new List<string>();
+    private int startYear = 2004;
+    private int endYear = 2024;
+    private string selectedRegion = "";
+    private string? errorMessage;
+    private IBrowserFile? selectedFile;
+    private string? successMessage;
+    private bool isImporting;
+    
+    private IEnumerable<GrainHarvest> filteredData => harvestData
+        .Where(x => x.Year >= startYear && x.Year <= endYear)
+        .Where(x => string.IsNullOrEmpty(selectedRegion) || x.Region == selectedRegion)
+        .OrderBy(x => x.Year)
+        .ThenBy(x => x.Region);
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            harvestData = await HarvestService.GetAllDataAsync();
+            regions = await HarvestService.GetAllRegionsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при загрузке данных: {ex.Message}";
+        }
+    }
+    
+    private void ApplyFilters()
+    {
+        try
+        {
+            errorMessage = null;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при применении фильтров: {ex.Message}";
+        }
+    }
+    
+    private async Task ExportData()
+    {
+        try
+        {
+            errorMessage = null;
+            var jsonData = await HarvestService.ExportToJsonAsync();
+            var bytes = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            var base64 = Convert.ToBase64String(bytes);
+            var dataUrl = $"data:application/json;base64,{base64}";
+            
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "grain_harvest_data.json", dataUrl);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при экспорте данных: {ex.Message}";
+        }
+    }
+    
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            errorMessage = null;
+            selectedFile = e.File;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при выборе файла: {ex.Message}";
+        }
+    }
+    
+    private async Task ImportData()
+    {
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+            isImporting = true;
+            StateHasChanged();
+            
+            if (selectedFile != null)
+            {
+                using var stream = selectedFile.OpenReadStream();
+                using var reader = new StreamReader(stream);
+                var jsonContent = await reader.ReadToEndAsync();
+                
+                await HarvestService.ImportFromJsonAsync(jsonContent);
+                
+                // Обновляем данные после импорта
+                harvestData = await HarvestService.GetAllDataAsync();
+                regions = await HarvestService.GetAllRegionsAsync();
+                
+                // Очищаем выбранный файл
+                selectedFile = null;
+                
+                successMessage = "Данные успешно импортированы!";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при импорте данных: {ex.Message}";
+        }
+        finally
+        {
+            isImporting = false;
+            StateHasChanged();
+        }
+    }
+} 
