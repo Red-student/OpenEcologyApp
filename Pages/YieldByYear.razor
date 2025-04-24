@@ -2,6 +2,13 @@
 @using OpenEcologyApp.Data
 @using OpenEcologyApp.Services
 @using Microsoft.JSInterop
+@using ClosedXML.Excel
+@using System.Text
+@using iText.Kernel.Pdf
+@using iText.Layout
+@using iText.Layout.Element
+@using iText.Layout.Properties
+@using iText.Kernel.Colors
 @inject GrainHarvestService HarvestService
 @inject IJSRuntime JSRuntime
 
@@ -19,58 +26,73 @@
     
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card">
+            <div class="card filter-card">
                 <div class="card-body">
                     <h5 class="card-title">Фильтры</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Год от</label>
-                        <input type="number" class="form-control" @bind="startYear" min="2004" max="2024" />
+                    <div class="filter-content">
+                        <div class="mb-3">
+                            <label class="form-label">Год от</label>
+                            <input type="number" class="form-control" @bind="startYear" min="2004" max="2024" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Год до</label>
+                            <input type="number" class="form-control" @bind="endYear" min="2004" max="2024" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Область</label>
+                            <select class="form-select" @bind="selectedRegion">
+                                <option value="">Все области</option>
+                                @foreach (var region in regions)
+                                {
+                                    <option value="@region">@region</option>
+                                }
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" @onclick="ApplyFilters">Применить фильтры</button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Год до</label>
-                        <input type="number" class="form-control" @bind="endYear" min="2004" max="2024" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Область</label>
-                        <select class="form-select" @bind="selectedRegion">
-                            <option value="">Все области</option>
-                            @foreach (var region in regions)
-                            {
-                                <option value="@region">@region</option>
-                            }
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" @onclick="ApplyFilters">Применить фильтры</button>
                 </div>
             </div>
         </div>
         
         <div class="col-md-8">
-            <div class="card">
+            <div class="card export-card">
                 <div class="card-body">
                     <h5 class="card-title">Экспорт данных</h5>
-                    <p class="card-text">Экспортируйте данные в формате JSON</p>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success" @onclick="ExportData">Экспорт в JSON</button>
-                        <div class="d-flex gap-2 align-items-center">
-                            <InputFile OnChange="OnFileSelected" class="form-control" accept=".json" />
-                            <button class="btn btn-primary" @onclick="ImportData" disabled="@(selectedFile == null || isImporting)">
-                                @if (isImporting)
-                                {
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span>Импорт...</span>
-                                }
-                                else
-                                {
-                                    <span>Импортировать</span>
-                                }
-                            </button>
+                    <p class="card-text">Экспортируйте данные в различных форматах</p>
+                    
+                    <div class="export-buttons">
+                        <div class="export-group">
+                            <h6 class="export-group-title">Экспорт данных</h6>
+                            <div class="export-buttons-grid">
+                                <button class="btn btn-outline-primary export-btn" @onclick="ExportData">
+                                    <i class="fas fa-file-code"></i>
+                                    <span>JSON</span>
+                                </button>
+                                <button class="btn btn-outline-success export-btn" @onclick="ExportToExcel">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Excel</span>
+                                </button>
+                                <button class="btn btn-outline-info export-btn" @onclick="ExportToCsv">
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>CSV</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="export-group">
+                            <h6 class="export-group-title">Генерация отчетов</h6>
+                            <div class="export-buttons-grid">
+                                <button class="btn btn-outline-danger export-btn" @onclick="GeneratePdfReport">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>PDF</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
                     @if (!string.IsNullOrEmpty(successMessage))
                     {
-                        <div class="alert alert-success mt-2" role="alert">
+                        <div class="alert alert-success mt-3" role="alert">
                             @successMessage
                         </div>
                     }
@@ -115,6 +137,79 @@
     </div>
 </div>
 
+<style>
+    .filter-card, .export-card {
+        height: 100%;
+        min-height: 350px;
+    }
+
+    .filter-card .card-body, .export-card .card-body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .export-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        flex: 1;
+        justify-content: space-between;
+    }
+
+    .export-group {
+        background-color: var(--bg-light);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .export-group-title {
+        color: var(--text-gray);
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .export-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .export-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .export-btn i {
+        font-size: 1.5rem;
+    }
+
+    .export-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-text {
+        margin-bottom: 1.5rem;
+    }
+</style>
+
 @code {
     private List<GrainHarvest> harvestData = new List<GrainHarvest>();
     private List<string> regions = new List<string>();
@@ -157,17 +252,17 @@
             errorMessage = $"Ошибка при применении фильтров: {ex.Message}";
         }
     }
-    
+
     private async Task ExportData()
     {
         try
         {
             errorMessage = null;
-            var jsonData = await HarvestService.ExportToJsonAsync();
+            var jsonData = await HarvestService.ExportToJsonAsync(startYear, endYear, selectedRegion);
             var bytes = System.Text.Encoding.UTF8.GetBytes(jsonData);
             var base64 = Convert.ToBase64String(bytes);
             var dataUrl = $"data:application/json;base64,{base64}";
-            
+
             await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "grain_harvest_data.json", dataUrl);
         }
         catch (Exception ex)
@@ -175,7 +270,7 @@
             errorMessage = $"Ошибка при экспорте данных: {ex.Message}";
         }
     }
-    
+
     private void OnFileSelected(InputFileChangeEventArgs e)
     {
         try
@@ -226,5 +321,224 @@
             isImporting = false;
             StateHasChanged();
         }
+    }
+
+    private async Task ExportToExcel()
+    {
+        try
+        {
+            errorMessage = null;
+            var excelData = await ExportToExcelAsync(filteredData);
+            var base64 = Convert.ToBase64String(excelData);
+            var dataUrl = $"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64}";
+
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "grain_harvest_data.xlsx", dataUrl);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при экспорте в Excel: {ex.Message}";
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        try
+        {
+            errorMessage = null;
+            var csvData = await ExportToCsvAsync(filteredData);
+            var base64 = Convert.ToBase64String(csvData);
+            var dataUrl = $"data:text/csv;base64,{base64}";
+
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "grain_harvest_data.csv", dataUrl);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при экспорте в CSV: {ex.Message}";
+        }
+    }
+
+    private async Task GeneratePdfReport()
+    {
+        try
+        {
+            errorMessage = null;
+            using var memoryStream = new MemoryStream();
+            var writer = new PdfWriter(memoryStream);
+            var pdf = new PdfDocument(writer);
+            var document = new Document(pdf);
+
+            // Добавляем заголовок
+            var title = new Paragraph("Grain yield report")
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetFontSize(20)
+                .SetBold()
+                .SetMarginBottom(20);
+            document.Add(title);
+
+            // Добавляем информацию о фильтрах
+            var filterInfo = new Paragraph($"Period: {startYear} - {endYear}")
+                .SetTextAlignment(TextAlignment.LEFT)
+                .SetFontSize(12)
+                .SetMarginBottom(10);
+            document.Add(filterInfo);
+
+            if (!string.IsNullOrEmpty(selectedRegion))
+            {
+                var regionInfo = new Paragraph($"Area: {selectedRegion}")
+                    .SetTextAlignment(TextAlignment.LEFT)
+                    .SetFontSize(12)
+                    .SetMarginBottom(10);
+                document.Add(regionInfo);
+            }
+
+            // Создаем таблицу
+            var table = new Table(5)
+                .SetWidth(UnitValue.CreatePercentValue(100))
+                .SetMarginTop(20);
+
+            // Добавляем заголовки
+            var headers = new[] { "Year", "Area", "Yield (c/ha)", "Acreage (thousand hectares)", "Gross harvest (thousand tons)" };
+            foreach (var header in headers)
+            {
+                table.AddHeaderCell(new Cell()
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetBold()
+                    .Add(new Paragraph(header)));
+            }
+
+            // Создаем словарь для транслитерации русских названий регионов
+            var regionTranslations = new Dictionary<string, string>
+            {
+                {"Акмолинская", "Akmola"},
+                {"Актюбинская", "Aktobe"},
+                {"Алматинская", "Almaty"},
+                {"Атырауская", "Atyrau"},
+                {"Восточно-Казахстанская", "East Kazakhstan"},
+                {"Жамбылская", "Zhambyl"},
+                {"Западно-Казахстанская", "West Kazakhstan"},
+                {"Карагандинская", "Karaganda"},
+                {"Костанайская", "Kostanay"},
+                {"Кызылординская", "Kyzylorda"},
+                {"Мангистауская", "Mangistau"},
+                {"Павлодарская", "Pavlodar"},
+                {"Северо-Казахстанская", "North Kazakhstan"},
+                {"Туркестанская", "Turkestan"},
+                {"г. Алматы", "city of Almaty"},
+                {"г. Астана", "city of Astana"},
+                {"г. Шымкент", "city of Shymkent"},
+                {"Республика Казахстан", "Republic of Kazakhstan"},
+                {"Ұлытау", "Ulytau"},
+                {"Южно-Казахстанская", "South Kazakhstan"}
+            };
+
+            // Добавляем данные с транслитерацией регионов
+            foreach (var item in filteredData)
+            {
+                table.AddCell(new Cell().SetTextAlignment(TextAlignment.CENTER).Add(new Paragraph(item.Year.ToString())));
+                
+                // Получаем английское название региона или оставляем оригинальное, если перевод не найден
+                var translatedRegion = regionTranslations.ContainsKey(item.Region) 
+                    ? regionTranslations[item.Region] 
+                    : item.Region;
+                    
+                table.AddCell(new Cell().SetTextAlignment(TextAlignment.CENTER).Add(new Paragraph(translatedRegion)));
+                table.AddCell(new Cell().SetTextAlignment(TextAlignment.CENTER).Add(new Paragraph(item.Yield.ToString("F1"))));
+                table.AddCell(new Cell().SetTextAlignment(TextAlignment.CENTER).Add(new Paragraph(item.SownArea.ToString("F0"))));
+                table.AddCell(new Cell().SetTextAlignment(TextAlignment.CENTER).Add(new Paragraph(item.GrossHarvest.ToString("F0"))));
+            }
+
+            document.Add(table);
+
+            // Добавляем итоговую статистику
+            var stats = new Paragraph($"\nFinal statistics:")
+                .SetTextAlignment(TextAlignment.LEFT)
+                .SetFontSize(14)
+                .SetBold()
+                .SetMarginTop(20);
+            document.Add(stats);
+
+            var avgYield = filteredData.Average(x => x.Yield);
+            var totalArea = filteredData.Sum(x => x.SownArea);
+            var totalHarvest = filteredData.Sum(x => x.GrossHarvest);
+
+            document.Add(new Paragraph($"Average yield: {avgYield:F1} c/ha"));
+            document.Add(new Paragraph($"Total acreage: {totalArea:N0} thousand hectares"));
+            document.Add(new Paragraph($"Total gross revenue: {totalHarvest:N0} thousand tons"));
+
+            // Добавляем дату и время генерации
+            var dateTime = new Paragraph($"\nThe report has been generated: {DateTime.Now:dd.MM.yyyy HH:mm}")
+                .SetTextAlignment(TextAlignment.RIGHT)
+                .SetFontSize(10)
+                .SetItalic();
+            document.Add(dateTime);
+
+            document.Close();
+
+            // Конвертируем в base64 и скачиваем
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+            var dataUrl = $"data:application/pdf;base64,{base64}";
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", "grain_harvest_report.pdf", dataUrl);
+
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при генерации PDF: {ex.Message}";
+        }
+    }
+
+    public async Task<byte[]> ExportToExcelAsync(IEnumerable<GrainHarvest> data)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Harvest Data");
+        worksheet.Cell(1, 1).Value = "Region";
+        worksheet.Cell(1, 2).Value = "Year";
+        worksheet.Cell(1, 3).Value = "Yield";
+        worksheet.Cell(1, 4).Value = "Sown Area";
+        worksheet.Cell(1, 5).Value = "Gross Harvest";
+
+        // Стилизуем заголовки
+        var headerRange = worksheet.Range(1, 1, 1, 5);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        // Заполняем данные
+        int row = 2;
+        foreach (var item in data)
+        {
+            worksheet.Cell(row, 1).Value = item.Year;
+            worksheet.Cell(row, 2).Value = item.Region;
+            worksheet.Cell(row, 3).Value = item.Yield;
+            worksheet.Cell(row, 4).Value = item.SownArea;
+            worksheet.Cell(row, 5).Value = item.GrossHarvest;
+            row++;
+        }
+
+        // Автоматическая ширина столбцов
+        worksheet.Columns().AdjustToContents();
+
+        // Добавляем границы
+        var dataRange = worksheet.Range(1, 1, row - 1, 5);
+        dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    public async Task<byte[]> ExportToCsvAsync(IEnumerable<GrainHarvest> data)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Region,Year,Yield,SownArea,GrossHarvest");
+
+        foreach (var item in data)
+        {
+            builder.AppendLine($"{item.Region},{item.Year},{item.Yield},{item.SownArea},{item.GrossHarvest}");
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
     }
 } 

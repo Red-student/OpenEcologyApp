@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using OpenEcologyApp.Data
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Главная - Мониторинг урожая</PageTitle>
 
@@ -11,120 +12,136 @@
 </div>
 
 <div class="container mt-4">
-    <div class="row g-4">
-        <!-- Блок статистики -->
-        <div class="col-md-8">
-            <div class="stats-card">
-                <h2>Ключевые показатели</h2>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="metric-card">
-                            <i class="fas fa-chart-line"></i>
-                            <div class="metric-content">
-                                <h3>Средняя урожайность</h3>
-                                <p class="metric-value">32.5 ц/га</p>
-                                <span class="trend-up">+2.3% с прошлого года</span>
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status" style="color: #6BAF92;">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        </div>
+    }
+    else if (error != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @error
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Блок статистики -->
+            <div class="col-md-8">
+                <div class="stats-card">
+                    <h2>Ключевые показатели</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <i class="fas fa-chart-line"></i>
+                                <div class="metric-content">
+                                    <h3>Средняя урожайность</h3>
+                                    <p class="stat-value">@averageYield.ToString("F1") ц/га</p>
+                                    <span class="trend-up">+2.3% с прошлого года</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <div class="metric-content">
+                                    <h3>Общая площадь</h3>
+                                    <p class="stat-value">@totalArea.ToString("N0") тыс. га</p>
+                                    <span class="trend-up">+5.1% к плану</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <i class="fas fa-warehouse"></i>
+                                <div class="metric-content">
+                                    <h3>Валовый сбор</h3>
+                                    <p class="stat-value">@totalHarvest.ToString("N0") тыс. т</p>
+                                    <span class="trend-up">+12% с прошлого года</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="metric-card">
-                            <i class="fas fa-map-marked-alt"></i>
-                            <div class="metric-content">
-                                <h3>Общая площадь</h3>
-                                <p class="metric-value">1.2 млн га</p>
-                                <span class="trend-up">+5.1% к плану</span>
+                </div>
+            </div>
+
+            <!-- Блок быстрых действий -->
+            <div class="col-md-4">
+                <div class="quick-actions-card">
+                    <h2>Быстрые действия</h2>
+                    <div class="action-buttons">
+                        <a href="/grain-data" class="action-button">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Зерновые данные</span>
+                        </a>
+                        <a href="/analytics" class="action-button">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Аналитика</span>
+                        </a>
+                        <a href="/yield-by-year" class="action-button">
+                            <i class="fas fa-map"></i>
+                            <span>Отчеты</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок последних обновлений -->
+            <div class="col-md-8">
+                <div class="updates-card">
+                    <h2>Последние обновления</h2>
+                    <div class="updates-list">
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-sync"></i>
+                            </div>
+                            <div class="update-content">
+                                <h4>Обновление данных по урожайности</h4>
+                                <p>Добавлены новые данные по урожайности за последний квартал</p>
+                                <span class="update-time">2 часа назад</span>
+                            </div>
+                        </div>
+                        <div class="update-item">
+                            <div class="update-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="update-content">
+                                <h4>Новый аналитический отчет</h4>
+                                <p>Доступен сравнительный анализ показателей за 2022-2023 годы</p>
+                                <span class="update-time">1 день назад</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="metric-card">
-                            <i class="fas fa-warehouse"></i>
-                            <div class="metric-content">
-                                <h3>Валовый сбор</h3>
-                                <p class="metric-value">3.8 млн тонн</p>
-                                <span class="trend-up">+12% с прошлого года</span>
+                </div>
+            </div>
+
+            <!-- Блок уведомлений -->
+            <div class="col-md-4">
+                <div class="notifications-card">
+                    <h2>Уведомления</h2>
+                    <div class="notifications-list">
+                        <div class="notification-item priority-high">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div class="notification-content">
+                                <h4>Отклонение от плана</h4>
+                                <p>Выявлено отклонение от плана в Южном регионе</p>
+                            </div>
+                        </div>
+                        <div class="notification-item priority-medium">
+                            <i class="fas fa-clock"></i>
+                            <div class="notification-content">
+                                <h4>Обновление системы</h4>
+                                <p>Плановое обновление системы сегодня в 23:00</p>
                             </div>
                         </div>
                     </div>
-                   
                 </div>
             </div>
         </div>
-
-        <!-- Блок быстрых действий -->
-        <div class="col-md-4">
-            <div class="quick-actions-card">
-                <h2>Быстрые действия</h2>
-                <div class="action-buttons">
-                    <a href="/grain-data" class="action-button">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Зерновые данные</span>
-                    </a>
-                    <a href="/analytics" class="action-button">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Аналитика</span>
-                    </a>
-                    <a href="/reports" class="action-button">
-                        <i class="fas fa-map"></i>
-                        <span>Отчеты</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Блок последних обновлений -->
-        <div class="col-md-8">
-            <div class="updates-card">
-                <h2>Последние обновления</h2>
-                <div class="updates-list">
-                    <div class="update-item">
-                        <div class="update-icon">
-                            <i class="fas fa-sync"></i>
-                        </div>
-                        <div class="update-content">
-                            <h4>Обновление данных по урожайности</h4>
-                            <p>Добавлены новые данные по урожайности за последний квартал</p>
-                            <span class="update-time">2 часа назад</span>
-                        </div>
-                    </div>
-                    <div class="update-item">
-                        <div class="update-icon">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div class="update-content">
-                            <h4>Новый аналитический отчет</h4>
-                            <p>Доступен сравнительный анализ показателей за 2022-2023 годы</p>
-                            <span class="update-time">1 день назад</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Блок уведомлений -->
-        <div class="col-md-4">
-            <div class="notifications-card">
-                <h2>Уведомления</h2>
-                <div class="notifications-list">
-                    <div class="notification-item priority-high">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <div class="notification-content">
-                            <h4>Отклонение от плана</h4>
-                            <p>Выявлено отклонение от плана в Южном регионе</p>
-                        </div>
-                    </div>
-                    <div class="notification-item priority-medium">
-                        <i class="fas fa-clock"></i>
-                        <div class="notification-content">
-                            <h4>Обновление системы</h4>
-                            <p>Плановое обновление системы сегодня в 23:00</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    }
 </div>
 
 <div class="bg-light py-5">
@@ -405,3 +422,62 @@
         box-shadow: var(--shadow-md);
     }
 </style>
+
+@code {
+    private bool isLoading = true;
+    private string? error;
+    private List<GrainHarvest>? data;
+    private double averageYield;
+    private double totalArea;
+    private double totalHarvest;
+    private int regionsCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            error = null;
+
+            var client = HttpClientFactory.CreateClient("Default");
+            data = await client.GetFromJsonAsync<List<GrainHarvest>>("api/ecology/all") ?? new();
+
+            if (data.Any())
+            {
+                CalculateStats();
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Ошибка при загрузке данных: {ex.Message}";
+            Console.WriteLine(error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CalculateStats()
+    {
+        if (data == null) return;
+
+        averageYield = data.Average(d => d.Yield);
+        totalArea = data.Sum(d => d.SownArea);
+        totalHarvest = data.Sum(d => d.GrossHarvest);
+        regionsCount = data.Select(d => d.Region).Distinct().Count();
+    }
+
+    public class SummaryStats
+    {
+        public double AverageYield { get; set; }
+        public double TotalArea { get; set; }
+        public double TotalHarvest { get; set; }
+    }
+}

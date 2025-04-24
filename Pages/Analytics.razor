@@ -65,8 +65,8 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title" style="color: #6BAF92;">Динамика урожайности по годам</h5>
-                        <div style="position: relative; height: 300px;">
-                            <canvas id="yieldChart"></canvas>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="yieldChart" style="width: 100% !important; height: 100% !important;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -75,8 +75,8 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title" style="color: #6BAF92;">Распределение посевных площадей</h5>
-                        <div style="position: relative; height: 300px;">
-                            <canvas id="areaChart"></canvas>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="areaChart" style="width: 100% !important; height: 100% !important;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -116,6 +116,104 @@
                                     }
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #6BAF92;">Сравнение данных по периодам</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Период 1</label>
+                                    <select class="form-control" @bind="selectedPeriod1">
+                                        @foreach (var year in availableYears)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Период 2</label>
+                                    <select class="form-control" @bind="selectedPeriod2">
+                                        @foreach (var year in availableYears)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Регион</label>
+                                    <select class="form-control" @bind="selectedRegion" disabled>
+                                        <option value="">Все регионы</option>
+                                        @foreach (var region in availableRegions)
+                                        {
+                                            <option value="@region">@region</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="comparison-card">
+                                    <h6>Период 1 (@selectedPeriod1)</h6>
+                                    <div class="comparison-stats">
+                                        <div class="stat-item">
+                                            <span>Урожайность:</span>
+                                            <span>@GetPeriodYield(selectedPeriod1).ToString("F1") ц/га</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Площадь:</span>
+                                            <span>@GetPeriodArea(selectedPeriod1).ToString("N0") тыс. га</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Сбор:</span>
+                                            <span>@GetPeriodHarvest(selectedPeriod1).ToString("N0") тыс. т</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="comparison-card">
+                                    <h6>Период 2 (@selectedPeriod2)</h6>
+                                    <div class="comparison-stats">
+                                        <div class="stat-item">
+                                            <span>Урожайность:</span>
+                                            <span>@GetPeriodYield(selectedPeriod2).ToString("F1") ц/га</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Площадь:</span>
+                                            <span>@GetPeriodArea(selectedPeriod2).ToString("N0") тыс. га</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>Сбор:</span>
+                                            <span>@GetPeriodHarvest(selectedPeriod2).ToString("N0") тыс. т</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="color: #6BAF92;">Сравнение урожайности по регионам</h5>
+                                        <div style="position: relative; height: 400px; width: 100%;">
+                                            <canvas id="comparisonChart" style="width: 100% !important; height: 100% !important;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -296,6 +394,38 @@
         border-color: #FF6B6B;
         color: #D63939;
     }
+
+    .comparison-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .comparison-stats {
+        margin-top: 15px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px;
+        background-color: var(--table-stripe);
+        border-radius: 5px;
+    }
+
+    .stat-item span:first-child {
+        color: var(--data-blue);
+        font-weight: 500;
+    }
+
+    .stat-item span:last-child {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+
 </style>
 
 @code {
@@ -311,17 +441,44 @@
     private double totalArea;
     private double totalHarvest;
     private int regionsCount;
+    private string selectedPeriod1 = "";
+    private string selectedPeriod2 = "";
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+        if (availableYears.Count >= 2)
+        {
+            selectedPeriod1 = availableYears[0];
+            selectedPeriod2 = availableYears[1];
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (data != null && data.Any())
         {
-            await InitializeCharts();
+            Console.WriteLine("OnAfterRenderAsync вызван");
+            Console.WriteLine($"firstRender: {firstRender}");
+            Console.WriteLine($"Количество данных: {data.Count}");
+
+            try
+            {
+                if (firstRender)
+                {
+                    Console.WriteLine("Инициализация графиков при первой загрузке");
+                    await InitializeCharts();
+                }
+                else
+                {
+                    Console.WriteLine("Обновление графиков");
+                    await UpdateCharts();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при работе с графиками: {ex.Message}");
+            }
         }
     }
 
@@ -334,6 +491,17 @@
 
             var client = HttpClientFactory.CreateClient("Default");
             data = await client.GetFromJsonAsync<List<GrainHarvest>>("api/ecology/all") ?? new();
+
+            Console.WriteLine("Данные загружены:");
+            Console.WriteLine($"Количество записей: {data.Count}");
+            if (data.Any())
+            {
+                Console.WriteLine("Пример данных:");
+                foreach (var item in data.Take(3))
+                {
+                    Console.WriteLine($"Год: {item.Year}, Регион: {item.Region}, Урожайность: {item.Yield}, Площадь: {item.SownArea}");
+                }
+            }
 
             if (data.Any())
             {
@@ -412,15 +580,16 @@
         if (data == null) return 0;
 
         var regionData = data.Where(d => d.Region == region)
-            .OrderBy(d => d.Year)
+            .OrderByDescending(d => d.Year)
+            .Take(2)
             .ToList();
 
         if (regionData.Count < 2) return 0;
 
-        var firstYear = regionData.First().Yield;
-        var lastYear = regionData.Last().Yield;
+        var lastYear = regionData[0].Yield;    // Самый последний год
+        var previousYear = regionData[1].Yield; // Предыдущий год
 
-        return ((lastYear - firstYear) / firstYear) * 100;
+        return ((lastYear - previousYear) / previousYear) * 100;
     }
 
     private async Task ApplyFilters()
@@ -430,23 +599,133 @@
         await InitializeCharts();
     }
 
-    private async Task InitializeCharts()
+    private async Task UpdateCharts()
     {
         if (data == null) return;
 
+        Console.WriteLine("Обновление графиков...");
+        Console.WriteLine($"Количество записей: {data.Count}");
+
+        // Фильтруем данные только для Республики Казахстан
+        var kazakhstanData = data.Where(d => d.Region == "Республика Казахстан").ToList();
+
         // Группируем данные по годам
-        var yearlyData = data
+        var yearlyData = kazakhstanData
             .GroupBy(d => d.Year)
             .OrderBy(g => g.Key)
             .ToList();
+
+        Console.WriteLine($"Количество лет: {yearlyData.Count}");
 
         // Подготавливаем данные для графиков
         var years = yearlyData.Select(g => g.Key.ToString()).ToArray();
         var yields = yearlyData.Select(g => g.Average(d => d.Yield)).ToArray();
         var areas = yearlyData.Select(g => g.Sum(d => d.SownArea)).ToArray();
 
-        // Инициализируем графики
-        await JSRuntime.InvokeVoidAsync("initializeCharts", years, yields, areas);
+        Console.WriteLine($"Годы: {string.Join(", ", years)}");
+        Console.WriteLine($"Урожайность: {string.Join(", ", yields)}");
+        Console.WriteLine($"Площади: {string.Join(", ", areas)}");
+
+        try
+        {
+            // Обновляем графики
+            await JSRuntime.InvokeVoidAsync("initializeCharts", years, yields, areas);
+            await Task.Delay(100); // Даем время на отрисовку первых графиков
+            await InitializeComparisonChart();
+            Console.WriteLine("Графики успешно обновлены");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при обновлении графиков: {ex.Message}");
+        }
+    }
+
+    private async Task InitializeCharts()
+    {
+        if (data == null) return;
+
+        Console.WriteLine("Инициализация графиков...");
+        Console.WriteLine($"Количество записей: {data.Count}");
+
+        // Фильтруем данные только для Республики Казахстан
+        var kazakhstanData = data.Where(d => d.Region == "Республика Казахстан").ToList();
+
+        // Группируем данные по годам
+        var yearlyData = kazakhstanData
+            .GroupBy(d => d.Year)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        Console.WriteLine($"Количество лет: {yearlyData.Count}");
+
+        // Подготавливаем данные для графиков
+        var years = yearlyData.Select(g => g.Key.ToString()).ToArray();
+        var yields = yearlyData.Select(g => g.Average(d => d.Yield)).ToArray();
+        var areas = yearlyData.Select(g => g.Sum(d => d.SownArea)).ToArray();
+
+        Console.WriteLine($"Годы: {string.Join(", ", years)}");
+        Console.WriteLine($"Урожайность: {string.Join(", ", yields)}");
+        Console.WriteLine($"Площади: {string.Join(", ", areas)}");
+
+        try
+        {
+            // Инициализируем графики
+            await JSRuntime.InvokeVoidAsync("initializeCharts", years, yields, areas);
+            await Task.Delay(100); // Даем время на отрисовку первых графиков
+            await InitializeComparisonChart();
+            Console.WriteLine("Графики успешно инициализированы");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при инициализации графиков: {ex.Message}");
+        }
+    }
+
+    private async Task InitializeComparisonChart()
+    {
+        if (data == null) return;
+
+        Console.WriteLine("Инициализация графика сравнения...");
+        Console.WriteLine($"Период 1: {selectedPeriod1}, Период 2: {selectedPeriod2}");
+
+        var period1Data = data.Where(d => d.Year.ToString() == selectedPeriod1)
+            .GroupBy(d => d.Region)
+            .ToDictionary(g => g.Key, g => g.Average(d => d.Yield));
+
+        var period2Data = data.Where(d => d.Year.ToString() == selectedPeriod2)
+            .GroupBy(d => d.Region)
+            .ToDictionary(g => g.Key, g => g.Average(d => d.Yield));
+
+        var regions = period1Data.Keys.Union(period2Data.Keys).OrderBy(r => r).ToArray();
+        var period1Yields = regions.Select(r => period1Data.ContainsKey(r) ? period1Data[r] : 0).ToArray();
+        var period2Yields = regions.Select(r => period2Data.ContainsKey(r) ? period2Data[r] : 0).ToArray();
+
+        Console.WriteLine($"Регионы: {string.Join(", ", regions)}");
+        Console.WriteLine($"Урожайность периода 1: {string.Join(", ", period1Yields)}");
+        Console.WriteLine($"Урожайность периода 2: {string.Join(", ", period2Yields)}");
+
+        await JSRuntime.InvokeVoidAsync("initializeComparisonChart", regions, period1Yields, period2Yields, selectedPeriod1, selectedPeriod2);
+    }
+
+    private double GetPeriodYield(string year)
+    {
+        if (data == null) return 0;
+        var periodData = ApplyFiltersToData().Where(d => d.Year.ToString() == year);
+        return periodData.Any() ? periodData.Average(d => d.Yield) : 0;
+    }
+
+    private double GetPeriodArea(string year)
+    {
+        if (data == null) return 0;
+        var periodData = ApplyFiltersToData().Where(d => d.Year.ToString() == year);
+        return periodData.Any() ? periodData.Sum(d => d.SownArea) : 0;
+    }
+
+    private double GetPeriodHarvest(string year)
+    {
+        if (data == null) return 0;
+        var periodData = ApplyFiltersToData().Where(d => d.Year.ToString() == year);
+        return periodData.Any() ? periodData.Sum(d => d.GrossHarvest) : 0;
     }
 
     private class RegionStats

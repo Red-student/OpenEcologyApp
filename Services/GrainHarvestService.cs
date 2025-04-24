@@ -58,9 +58,18 @@ namespace OpenEcologyApp.Services
                 .ToListAsync();
         }
 
-        public async Task<string> ExportToJsonAsync()
+        public async Task<string> ExportToJsonAsync(int? startYear, int? endYear, string? region)
         {
-            var data = await _context.GrainHarvests.ToListAsync();
+            var query = _context.GrainHarvests.AsQueryable();
+
+            if (startYear.HasValue)
+                query = query.Where(x => x.Year >= startYear.Value);
+            if (endYear.HasValue)
+                query = query.Where(x => x.Year <= endYear.Value);
+            if (!string.IsNullOrEmpty(region))
+                query = query.Where(x => x.Region == region);
+
+            var data = await query.ToListAsync();
             return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
         }
 

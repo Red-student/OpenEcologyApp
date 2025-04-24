@@ -54,7 +54,9 @@ a:hover {
     border-color: var(--secondary-brown);
     color: var(--white);
 }
-
+.fa-mobile-alt {
+    color: #FFFAFA !important;
+}
 .btn-secondary:hover {
     background-color: var(--primary-wheat);
     border-color: var(--primary-wheat);

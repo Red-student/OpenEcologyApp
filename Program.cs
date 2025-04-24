@@ -6,13 +6,20 @@ using OpenEcologyApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddDbContext<EcologyDbContext>(options =>
-    options.UseSqlite("Data Source=app.db"));
 
-// Добавляем CORS
+// Регистрируем контекст базы данных и указываем SQLite и путь к файлу базы данных "app.db"
+builder.Services.AddDbContext<EcologyDbContext>(options =>
+    options.UseSqlite("Data Source=app.db")); // Здесь создаётся файл app.db при первом запуске
+
+// Добавляем фоновую службу для автоматического обновления данных
+builder.Services.AddHostedService<GrainDataUpdateService>();
+
+// Регистрируем сервис импорта XLS-файлов
+builder.Services.AddScoped<XlsImporter>();
+
+// Настройка политики CORS: разрешаем доступ с любого домена
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -23,75 +30,78 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Добавляем HttpClient с базовым адресом
+// Настраиваем HttpClient с базовым адресом для API-запросов
 builder.Services.AddHttpClient("Default", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7290/");
 });
 
-// Регистрируем сервисы
+// Регистрируем пользовательские сервисы
 builder.Services.AddScoped<JsonDataService>();
 builder.Services.AddScoped<GrainHarvestService>();
 
 var app = builder.Build();
 
-// Initialize the database
+//  Инициализация базы данных при запуске приложения
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<EcologyDbContext>();
-        
-        // Проверяем, существует ли база данных
+
+        // Проверка подключения к базе данных
         if (!context.Database.CanConnect())
         {
+            // Если базы нет — создаём и импортируем данные
             context.Database.EnsureCreated();
-            DbInitializer.Initialize(context);
+            var importer = new XlsImporter(context);
+            await importer.ImportGrainDataAsync();
         }
-        
-        // Проверяем, что данные добавились
+
+        // Логируем количество загруженных записей
         var count = context.GrainHarvests.Count();
         Console.WriteLine($"База данных инициализирована. Добавлено {count} записей.");
     }
     catch (Exception ex)
     {
+        // Обработка ошибок и логирование
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Произошла ошибка при инициализации базы данных.");
     }
 }
 
-// Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseExceptionHandler("/Error"); // Показываем страницу ошибки в проде
+    app.UseHsts(); // HTTP Strict Transport Security
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseCors();
+app.UseHttpsRedirection();     // Перенаправление на HTTPS
+app.UseStaticFiles();          // Обслуживание статических файлов (например, CSS, JS)
+app.UseRouting();              // Включаем маршрутизацию
+app.UseCors();                 // Применяем CORS
 
+// Настройка конечных точек
 app.UseEndpoints(endpoints =>
 {
-    endpoints.MapControllers();
-    endpoints.MapBlazorHub();
-    endpoints.MapFallbackToPage("/_Host");
+    endpoints.MapControllers();              // Подключаем контроллеры API
+    endpoints.MapBlazorHub();                // Включаем поддержку SignalR (Blazor)
+    endpoints.MapFallbackToPage("/_Host");   // Обработка всех других запросов через _Host.cshtml
 });
 
-// Инициализация базы данных
+// Повторная инициализация данных, может быть полезна при старте
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<EcologyDbContext>();
-        context.Database.EnsureCreated();
-        
+        context.Database.EnsureCreated(); // Убедимся, что база существует
+
         var harvestService = services.GetRequiredService<GrainHarvestService>();
-        await harvestService.InitializeDataAsync();
+        await harvestService.InitializeDataAsync(); // Инициализация пользовательских данных
     }
     catch (Exception ex)
     {
@@ -100,4 +110,5 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Запуск приложения
 app.Run();

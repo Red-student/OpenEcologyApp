@@ -97,13 +97,37 @@
                                         <li class="page-item @(_page <= 1 ? "disabled" : "")">
                                             <button class="page-link" @onclick="PreviousPage">Предыдущая</button>
                                         </li>
-                                        @for (int i = 1; i <= totalPages; i++)
-                                        {
-                                            var pageNumber = i;
-                                            <li class="page-item @(pageNumber == _page ? "active" : "")">
-                                                <button class="page-link" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
-                                            </li>
-                                        }
+                                        @if (_page > 3)
+                                            {
+                                                <li class="page-item">
+                                                    <button class="page-link" @onclick="() => GoToPage(1)">1</button>
+                                                </li>
+                                                @if (_page > 4)
+                                                {
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link">...</span>
+                                                    </li>
+                                                }
+                                            }
+
+                                            @for (int i = Math.Max(1, _page - 2); i <= Math.Min(totalPages, _page + 2); i++)
+                                            {
+                                                var pageNumber = i;
+                                                <li class="page-item @(pageNumber == _page ? "active" : "")">
+                                                    <button class="page-link" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                                                </li>
+                                            }
+
+                                            @if (_page + 2 < totalPages - 1)
+                                            {
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                                <li class="page-item">
+                                                    <button class="page-link" @onclick="() => GoToPage(totalPages)">@totalPages</button>
+                                                </li>
+                                            }
+
                                         <li class="page-item @(_page >= totalPages ? "disabled" : "")">
                                             <button class="page-link" @onclick="NextPage">Следующая</button>
                                         </li>

@@ -5,6 +5,7 @@
 .top-row {
     height: 3.5rem;
     background-color: var(--primary-green); /* глубокий синий для шапки */
+
 }
 
 .container-fluid {
